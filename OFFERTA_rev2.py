@@ -2,22 +2,27 @@
 H2READY TOOLKIT - Tool 2.6 unificato
 app_h2ready.py - Interfaccia: scheda di compilazione, dimensionamento, schede di output.
 
+
 Progetto Interreg Italia-Slovenia H2READY - APE FVG
 Autore: Matteo De Piccoli
+
 
 Tre modalita' di analisi condividono lo stesso motore (core.py):
   1. DOMANDA    - dal target di idrogeno agli impianti e alle superfici necessarie
   2. SUPERFICI  - dalle superfici disponibili all'idrogeno producibile
   3. COPERTURA  - entrambi, per misurare quanta parte del fabbisogno il territorio copre
 
+
 I parametri si compilano in una scheda e il dimensionamento parte con un bottone:
 senza, ogni movimento di uno slider farebbe ripartire la simulazione su 8760 ore.
+
 
 E' possibile aggiungere il profilo orario misurato di un impianto gia' in esercizio
 (idroelettrico, biomasse, cogenerazione), che si somma al fotovoltaico e all'eolico
 dimensionati dal tool. Attenzione: un impianto esistente di norma non e' addizionale
 ai sensi dell'Atto Delegato (UE) 2023/1184 e riduce la quota di idrogeno certificabile.
 """
+
 
 import io
 import os
@@ -30,24 +35,32 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 import core
 from i18n import LINGUE, testi
 
+
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwpP0x0hBnhOadXA43IieWg9EusAuhaafpyeXpyaStssDd7Qo-jwnuOttAllzz8r5JS/exec"
+
 
 st.set_page_config(page_title="H2READY TOOLKIT - Tool 2.6: Produzione idrogeno verde", layout="wide")
 
+
 lang = LINGUE[st.sidebar.selectbox(testi("it")["lang_label"], list(LINGUE.keys()))]
 
+
 import h2ready as H
+
 
 comune = H.blocco_accesso("H2READY TOOLKIT - Tool 2.6: Produzione di idrogeno verde",
                           percorso="B", avanzato=True, lingua=lang)
 if comune is None:
     st.stop()
 
+
 class _Testi(dict):
     """Una chiave di traduzione mancante non deve uccidere la pagina.
+
 
     E' il difetto che teneva invisibile il blocco di esportazione: un KeyError
     dentro una scheda interrompe il rendering di tutto cio' che segue, senza
@@ -56,11 +69,15 @@ class _Testi(dict):
     parentesi graffe perche' verrebbero interpretate da .format().
     """
 
+
     def __missing__(self, k):
         return "\u27e8" + str(k) + "\u27e9"
 
 
+
+
 t = _Testi(testi(lang))
+
 
 # Etichette riscritte senza toccare i18n.py: "Ely" non dice nulla a un Comune,
 # e "superficie a terra" da sola non chiarisce di quali aree si parli.
@@ -79,6 +96,8 @@ T_OVER = {
            "alloc_terra": "Delež na tleh — brownfield / utility scale (%)"},
 }
 t.update(T_OVER.get(lang, T_OVER["it"]))
+
+
 
 
 # ==================================================================
@@ -109,13 +128,16 @@ Quando l'energia viaggia sulla **rete pubblica** invece che su un cavo tuo, il g
 ti fa pagare il trasporto: è il *wheeling*, un pedaggio in €/MWh su ogni kilowattora
 trasportato, per tutta la vita dell'impianto.
 
+
 La scelta è fra due strade opposte:
+
 
 - **Linea diretta** — paghi il cavidotto una volta sola (CAPEX), poi trasporti gratis.
   Conviene sulle distanze brevi e sulle potenze grandi. È anche l'unica configurazione
   in cui la batteria è "dietro lo stesso punto di connessione" e resta conforme RED III.
 - **Rete pubblica** — paghi solo l'allaccio, ma il pedaggio ti accompagna per vent'anni.
   Conviene su impianti sparsi e lontani, dove il cavo costerebbe più del pedaggio.
+
 
 Il punto di pareggio dipende quasi solo dai chilometri: sotto i 2-3 km la linea diretta
 vince quasi sempre, sopra i 10 km quasi mai.
@@ -126,7 +148,9 @@ Un **PPA** (*Power Purchase Agreement*) è un contratto pluriennale con cui si c
 energia direttamente da un produttore rinnovabile a un prezzo fissato in anticipo,
 invece di prenderla dal mercato al prezzo del momento.
 
+
 Serve a due cose che contano molto per un elettrolizzatore:
+
 
 - **Toglie il rischio di prezzo.** L'elettricità è la voce dominante nel costo
   dell'idrogeno: senza un prezzo noto, l'LCOH non è calcolabile e il progetto non è
@@ -134,9 +158,11 @@ Serve a due cose che contano molto per un elettrolizzatore:
 - **Evita di costruire.** In autoproduzione servono capitale, aree e autorizzazioni;
   con un PPA si compra la stessa energia rinnovabile senza immobilizzare nulla.
 
+
 Il rovescio: si paga per vent'anni una fornitura che in autoproduzione, dopo
 l'ammortamento, sarebbe quasi gratis. Il confronto fra i due modelli è esattamente
 ciò che questa scheda permette di fare.
+
 
 **Per approfondire:**
 [Come funziona un PPA](https://www.youtube.com/watch?v=eHRPzBi62y8) ·
@@ -195,13 +221,16 @@ When energy travels on the **public grid** instead of your own cable, the operat
 charges you for transport: that is *wheeling*, a toll in €/MWh on every kilowatt-hour
 carried, for the whole life of the plant.
 
+
 The choice is between two opposite routes:
+
 
 - **Direct line** — you pay the cable once (CAPEX), then transport is free. It wins over
   short distances and large capacities. It is also the only configuration where the
   battery sits behind the same connection point and stays RED III compliant.
 - **Public grid** — you only pay the connection, but the toll follows you for twenty
   years. It wins for scattered, distant plants where the cable would cost more.
+
 
 The break-even depends almost entirely on distance: below 2-3 km the direct line nearly
 always wins, above 10 km it nearly never does.
@@ -212,15 +241,19 @@ A **PPA** (*Power Purchase Agreement*) is a multi-year contract to buy energy di
 from a renewable producer at a price fixed in advance, instead of taking it from the
 market at the price of the day.
 
+
 It does two things that matter a lot for an electrolyser:
+
 
 - **It removes price risk.** Electricity is the dominant item in the cost of hydrogen:
   without a known price the LCOH cannot be computed and the project is not bankable.
 - **It avoids building.** Self-production needs capital, land and permits; a PPA buys
   the same renewable energy without tying up any of them.
 
+
 The downside: you pay for twenty years for a supply that, under self-production, would
 be nearly free once depreciated. Comparing the two models is exactly what this tab is for.
+
 
 **Further reading:**
 [How a PPA works](https://www.youtube.com/watch?v=eHRPzBi62y8) ·
@@ -274,12 +307,15 @@ Ko energija potuje po **javnem omrežju** namesto po lastnem kablu, operater zar
 prenos: to je *wheeling*, pristojbina v €/MWh na vsako preneseno kilovatno uro, za vso
 življenjsko dobo naprave.
 
+
 Izbira je med dvema nasprotnima potema:
+
 
 - **Neposredni vod** — kabel plačate enkrat (CAPEX), nato je prenos brezplačen. Zmaga na
   kratkih razdaljah in pri velikih močeh. Je tudi edina konfiguracija, v kateri je
   baterija za istim priključnim mestom in ostaja skladna z RED III.
 - **Javno omrežje** — plačate le priključitev, pristojbina pa vas spremlja dvajset let.
+
 
 Prelomna točka je skoraj v celoti odvisna od razdalje: pod 2-3 km skoraj vedno zmaga
 neposredni vod, nad 10 km skoraj nikoli.
@@ -289,14 +325,18 @@ neposredni vod, nad 10 km skoraj nikoli.
 **PPA** (*Power Purchase Agreement*) je večletna pogodba za nakup energije neposredno od
 proizvajalca iz obnovljivih virov po vnaprej določeni ceni.
 
+
 Rešuje dve stvari, ki sta za elektrolizer ključni:
+
 
 - **Odpravi cenovno tveganje.** Elektrika je prevladujoča postavka v ceni vodika: brez
   znane cene LCOH ni izračunljiv in projekt ni financirljiv.
 - **Ni treba graditi.** Lastna proizvodnja zahteva kapital, zemljišča in dovoljenja.
 
+
 Slabost: dvajset let plačujete dobavo, ki bi bila pri lastni proizvodnji po amortizaciji
 skoraj brezplačna. Primerjava obeh modelov je prav namen tega zavihka.
+
 
 **Za poglobitev:**
 [Kako deluje PPA](https://www.youtube.com/watch?v=eHRPzBi62y8) ·
@@ -336,11 +376,14 @@ skoraj brezplačna. Primerjava obeh modelov je prav namen tega zavihka.
 }
 tx = TX.get(lang, TX["it"])
 
+
 # Riferimenti nazionali documentati (PNIEC 2024, consumi H2 rinnovabile al 2030)
 PNIEC_INDUSTRIA_TON = 115_000.0
 PNIEC_TOTALE_TON = 252_000.0
 # Equivalenti fisici: ordini di grandezza, non valori puntuali
 EQ_BUS_TON, EQ_CAMION_TON, EQ_FORNO_TON = 9.0, 8.0, 3000.0
+
+
 
 
 def template_csv():
@@ -349,6 +392,8 @@ def template_csv():
     esempio = {0: "6614.52", 1: "6688.44", 2: "6687.12"}
     righe += [f"{h},{esempio.get(h, '')}" for h in range(core.ORE)]
     return "\n".join(righe).encode("utf-8")
+
+
 
 
 def template_xlsx():
@@ -370,6 +415,8 @@ def template_xlsx():
     return buf.getvalue()
 
 
+
+
 # ==================================================================
 # INTESTAZIONE
 # ==================================================================
@@ -383,13 +430,16 @@ st.markdown("""
     </p>
 """, unsafe_allow_html=True)
 
+
 # --- Comune e dati ereditati ---------------------------------------------
 H.intestazione_comune(comune, "Tool 2.6 · Dimensionamento della produzione di idrogeno")
+
 
 # domanda dal percorso A
 _dom_ind = H.valore(comune, "T21_FABBISOGNO_H2_TON_ANNO", 0) or 0
 _dom_flotte = H.valore(comune, "T22_FABBISOGNO_H2_TON_ANNO", 0) or 0
 _target_A = _dom_ind + _dom_flotte
+
 
 # superfici dal questionario 2.5, raggruppate come le tre famiglie del tool
 _mq_terra = sum(H.valore(comune, c, 0) or 0 for c in
@@ -402,6 +452,17 @@ _mq_pubblica = H.valore(comune, "T25_SUP_PUBBLICA_MQ", 0) or 0
 _cap_rete = H.valore(comune, "T25_CAPACITA_RESIDUA_MW", 0) or 0
 _progr = H.valore(comune, "T25_PROGRAMMABILI_MW", 0) or 0
 _eolico_ok = H.vero(comune.get("T25_FLAG_EOLICO_IDONEO"))
+
+
+# Punti di immissione (POD) censiti dal questionario 2.5.
+# Determinano quante connessioni servono e quindi il CAPEX di connessione:
+# finche' erano fissi (10 tetti, 3 capannoni) quella voce era un valore di
+# comodo, non un dato del territorio. La terra resta a un punto solo: si
+# assume che le aree a terra confluiscano in un unico impianto.
+_pod_terra = int(H.valore(comune, "T25_POD_TERRA", 0) or 0)
+_pod_tetti = int(H.valore(comune, "T25_POD_TETTI_CIV", 0) or 0)
+_pod_cap = int(H.valore(comune, "T25_POD_TETTI_IND", 0) or 0)
+
 
 _voci, _avvisi = [], []
 if _target_A > 0:
@@ -427,6 +488,12 @@ if _progr > 0:
                   "questionario 2.5"))
 _voci.append(("Aree con ventosità adeguata", "Sì" if _eolico_ok else "No",
               "questionario 2.5"))
+if _pod_tetti > 0 or _pod_cap > 0 or _pod_terra > 0:
+    _voci.append(("Punti di immissione censiti",
+                  f"coperture civili {_pod_tetti} · coperture industriali {_pod_cap}"
+                  + (f" · aree a terra {_pod_terra}" if _pod_terra > 0 else ""),
+                  "questionario 2.5"))
+
 
 if _target_A == 0:
     _avvisi.append(("warning", "Nessuna domanda rilevata dal percorso A: in modalità "
@@ -435,6 +502,11 @@ if _target_A == 0:
 if _mq_terra + _mq_tetti + _mq_cap == 0:
     _avvisi.append(("warning", "Il questionario 2.5 non risulta compilato: le superfici "
                                "partono dai valori predefiniti."))
+if _pod_tetti == 0 and _pod_cap == 0:
+    _avvisi.append(("info", "Il 2.5 non riporta punti di immissione: il numero di "
+                            "connessioni parte dai valori predefiniti (10 coperture "
+                            "civili, 3 industriali) e il CAPEX di connessione è quindi "
+                            "solo indicativo."))
 if not _eolico_ok:
     _avvisi.append(("info", "Dal 2.5 non risultano aree con ventosità adeguata: la quota "
                             "eolica parte da zero. Si può comunque forzare, ma il "
@@ -445,12 +517,16 @@ if _progr > 0:
                             "sezione «Impianto già esistente»: l'energia continua cambia "
                             "sensibilmente le ore di funzionamento dell'elettrolizzatore."))
 
+
 H.scheda_dati("📥 Dati ereditati dai questionari precedenti", _voci, _avvisi)
+
 
 _modo_sugg, _perche_modo = H.modalita_2_6(comune)
 st.info(f"**Modalità suggerita: {_modo_sugg}**\n\n{_perche_modo}")
 
+
 profili, esito_dati = core.carica_profili()
+
 
 # ==================================================================
 # STATO DELLA PAGINA
@@ -464,9 +540,13 @@ if "fase" not in st.session_state:
 C = st.session_state.get("cfg", {})
 
 
+
+
 def dv(chiave, predefinito):
     """Valore da riproporre: quello gia' scelto, altrimenti il predefinito."""
     return C.get(chiave, predefinito)
+
+
 
 
 def di(chiave, opzioni, predefinito):
@@ -474,6 +554,8 @@ def di(chiave, opzioni, predefinito):
     opzioni = list(opzioni)
     v = C.get(chiave, predefinito)
     return opzioni.index(v) if v in opzioni else opzioni.index(predefinito)
+
+
 
 
 MODI_CONN = ["diretta", "rete"]
@@ -487,10 +569,12 @@ FONTI_EXT = {
     "altro": "Altro",
 }
 
+
 # ==================================================================
 # FASE 1 - SCHEDA DI COMPILAZIONE
 # ==================================================================
 if st.session_state["fase"] == "scheda":
+
 
     with st.expander(t["readme_expander"]):
         nome_md = f"README_metodologia_{lang}.md"
@@ -500,6 +584,7 @@ if st.session_state["fase"] == "scheda":
                 st.markdown(f.read())
         except FileNotFoundError:
             st.warning(t["readme_missing"].format(f=nome_md))
+
 
     if esito_dati["ok"]:
         st.caption(f"{t['data_ok']}: `{esito_dati['file_pv']}` · `{esito_dati['file_wind']}`")
@@ -513,9 +598,11 @@ if st.session_state["fase"] == "scheda":
                 st.write(f"{t['data_diag_err']} `{esito_dati['errore']}`")
             st.info(t["data_diag_hint"])
 
+
     st.markdown("---")
     st.header(tx["setup"])
     st.caption(tx["setup_hint"])
+
 
     # --- Scelte che cambiano la forma della scheda: fuori dal modulo,
     #     perche' devono reagire subito.
@@ -530,12 +617,15 @@ if st.session_state["fase"] == "scheda":
                             format_func=lambda k: t[f"zona_{k}"])
     st.info(t[f"mode_help_{modalita}"])
 
+
     usa_superfici = modalita in ("superfici", "copertura")
     usa_domanda = modalita in ("domanda", "copertura")
+
 
     # --- Impianto esistente: il caricamento va validato subito ---
     with st.expander(tx["ext_head"], expanded=bool(dv("ext_on", False))):
         ext_on = st.checkbox(tx["ext_on"], value=dv("ext_on", False), help=tx["ext_help"])
+
 
         st.caption(f"**{tx['tpl_head']}** — {tx['tpl_note']}")
         d1, d2, _ = st.columns([1, 1, 3])
@@ -546,6 +636,7 @@ if st.session_state["fase"] == "scheda":
                                use_container_width=True)
         d2.download_button(tx["tpl_csv"], template_csv(), "H2READY_template_profilo_orario.csv",
                            "text/csv", use_container_width=True)
+
 
         ext_norm, ext_mw, ext_fonte = None, 0.0, "idro_fluente"
         if ext_on:
@@ -559,10 +650,12 @@ if st.session_state["fase"] == "scheda":
             with e3:
                 mw_dich = st.number_input(tx["ext_mw"], 0.0, 500.0, dv("ext_mw", 11.0), step=0.5)
 
+
             if up is not None:
                 st.session_state["ext_raw"] = up.getvalue()
                 st.session_state["ext_nome"] = up.name
             raw = st.session_state.get("ext_raw")
+
 
             if raw is not None:
                 buf_ext = io.BytesIO(raw)
@@ -583,11 +676,13 @@ if st.session_state["fase"] == "scheda":
                         st.caption(f"· {m}")
                     ext_norm, ext_mw = None, 0.0
 
+
     # --- Il resto in un modulo: nulla si ricalcola finche' non si preme ---
     with st.form("scheda"):
         tab_imp, tab_conn, tab_sys, tab_red, tab_eco = st.tabs(
             ["🏗️ " + t["sec_impianti"], "🔌 " + t["tab_conn"], "⚡ " + t["sb_ely"],
              "📜 " + t["sb_red"], "💶 " + t["sb_costi"]])
+
 
         # ---------- impianti ----------
         with tab_imp:
@@ -598,6 +693,7 @@ if st.session_state["fase"] == "scheda":
                 _t_def = int(round(_target_A)) if _target_A >= 1 else 1000
                 target_ton = g1.number_input(t["target_h2"], 1, 1000000,
                                              int(dv("target_ton", _t_def)))
+
 
             q_terra = q_tetti = q_cap = q_wind = 0
             if modalita == "domanda":
@@ -611,6 +707,7 @@ if st.session_state["fase"] == "scheda":
                                    help=None if _eolico_ok else
                                    "Il questionario 2.5 non segnala aree con ventosità adeguata.")
                 st.markdown("---")
+
 
             p1, p2, p3 = st.columns(3)
             with p1:
@@ -626,7 +723,12 @@ if st.session_state["fase"] == "scheda":
                                            step=500.0, key="k_tm2") if usa_superfici else 0.0
                 tetti_use = st.slider(t["use"], 10, 100, int(dv("tetti_use", 50)), key="k_tetti_use")
                 if usa_superfici:
-                    tetti_n = st.number_input(t["n_punti"], 0, 1000, int(dv("tetti_n", 10)), key="k_tetti_n")
+                    tetti_n = st.number_input(
+                        t["n_punti"], 0, 1000,
+                        int(dv("tetti_n", _pod_tetti if _pod_tetti > 0 else 10)),
+                        key="k_tetti_n",
+                        help="Precompilato con i punti di immissione dichiarati nel "
+                             "questionario 2.5, quando disponibili.")
                     tetti_taglia = None
                 else:
                     tetti_n = None
@@ -639,12 +741,18 @@ if st.session_state["fase"] == "scheda":
                                          step=1000.0, key="k_cm2") if usa_superfici else 0.0
                 cap_use = st.slider(t["use"], 10, 100, int(dv("cap_use", 70)), key="k_cap_use")
                 if usa_superfici:
-                    cap_n = st.number_input(t["n_punti"], 0, 500, int(dv("cap_n", 3)), key="k_cap_n")
+                    cap_n = st.number_input(
+                        t["n_punti"], 0, 500,
+                        int(dv("cap_n", _pod_cap if _pod_cap > 0 else 3)),
+                        key="k_cap_n",
+                        help="Precompilato con i punti di immissione dichiarati nel "
+                             "questionario 2.5, quando disponibili.")
                     cap_taglia = None
                 else:
                     cap_n = None
                     cap_taglia = st.number_input(t["taglia_media"], 10, 5000,
                                                  int(dv("cap_taglia", 500)), key="k_cap_tm")
+
 
             with st.expander(tx["adv"]):
                 st.caption(tx["adv_note"])
@@ -657,12 +765,14 @@ if st.session_state["fase"] == "scheda":
                                      step=0.01, key="k_cap_dens")
                 cap_resa = v3.slider(t["resa"], 70, 105, int(dv("cap_resa", 93)), key="k_cap_resa")
 
+
             st.markdown("---")
             w1, w2, w3 = st.columns(3)
             w1.markdown(f"**{t['sb_wind']}**")
             wind_n = w2.number_input(t["wind_n"], 0, 100,
                                      int(dv("wind_n", 1 if _eolico_ok else 0))) if usa_superfici else 0
             wind_p = w3.slider(t["wind_p"], 0.5, 8.0, dv("wind_p", 3.0), step=0.5) if usa_superfici else 3.0
+
 
         # ---------- connessioni ----------
         with tab_conn:
@@ -683,8 +793,10 @@ if st.session_state["fase"] == "scheda":
                                          step=5000, key=f"k_{pref}_ck")
                 return km, modo, cp, ck
 
+
             with st.expander(tx["wheel_title"]):
                 st.markdown(tx["wheel_md"])
+
 
             terra_km, terra_modo, _, _ = blocco_conn(t["sb_terra"], "terra", "diretta", 2.0, 0, 0, False)
             st.markdown("---")
@@ -694,6 +806,7 @@ if st.session_state["fase"] == "scheda":
             st.markdown("---")
             wind_km = st.slider(f"{t['sb_wind']} — {t['dist']}", 0.1, 30.0, dv("wind_km", 5.0), key="k_wind_km")
             terra_dir, tetti_dir, cap_dir = (terra_modo == "diretta"), (tetti_modo == "diretta"), (cap_modo == "diretta")
+
 
             if ext_on:
                 st.markdown("---")
@@ -705,6 +818,7 @@ if st.session_state["fase"] == "scheda":
                 ext_add = y4.checkbox(tx["ext_add"], value=dv("ext_add", False), help=tx["ext_add_help"])
             else:
                 ext_cfd, ext_dir, ext_km, ext_add = 90.0, False, 0.0, True
+
 
         # ---------- elettrolisi, accumulo, stoccaggio, compressione ----------
         with tab_sys:
@@ -730,6 +844,7 @@ if st.session_state["fase"] == "scheda":
                                          format_func=lambda k: "Standard (500 bar)" if k == "standard"
                                          else "Booster (700 bar)")
 
+
         # ---------- RED III ----------
         with tab_red:
             st.caption(tx["help_red"])
@@ -747,11 +862,13 @@ if st.session_state["fase"] == "scheda":
                 grid_price = st.slider(t["red_grid_price"], 20.0, 300.0, dv("grid_price", 110.0))
                 grid_cert = st.checkbox(t["red_grid_cert"], value=dv("grid_cert", False))
 
+
         # ---------- economia ----------
         with tab_eco:
             st.caption(tx["help_eco"])
             with st.expander(tx["ppa_title"]):
                 st.markdown(tx["ppa_md"])
+
 
             k1, k2, k3 = st.columns(3)
             with k1:
@@ -778,10 +895,13 @@ if st.session_state["fase"] == "scheda":
                 prezzo_h2 = st.slider(t["prezzo_h2"], 2.0, 20.0, dv("prezzo_h2", 8.0))
                 prezzo_h2_nc = st.slider(t["prezzo_h2_nc"], 1.0, 15.0, dv("prezzo_h2_nc", 4.0))
 
+
         st.markdown("")
         avvia = st.form_submit_button(tx["run"], type="primary", use_container_width=True)
 
+
     st.caption(f"⚙️ {t['numba_on'] if core.NUMBA_OK else t['numba_off']}")
+
 
     if avvia:
         st.session_state["cfg"] = dict(
@@ -811,7 +931,9 @@ if st.session_state["fase"] == "scheda":
         st.session_state["fase"] = "risultati"
         st.rerun()
 
+
     st.stop()
+
 
 # ==================================================================
 # FASE 2 - RISULTATI
@@ -819,6 +941,7 @@ if st.session_state["fase"] == "scheda":
 # esistono piu' in questa fase.
 # ==================================================================
 C = st.session_state["cfg"]
+
 
 nav1, nav2 = st.columns([1, 4])
 if nav1.button(tx["back"], use_container_width=True):
@@ -828,9 +951,11 @@ nav2.caption(tx["recap"].format(
     m=t[f"mode_{C['modalita']}"], z=t[f"zona_{C['zona']}"],
     e=(f" · {tx['ext_serie']} {C['ext_mw']:.1f} MW" if C["ext_mw"] > 0 else "")))
 
+
 modalita, zona = C["modalita"], C["zona"]
 usa_superfici = modalita in ("superfici", "copertura")
 usa_domanda = modalita in ("domanda", "copertura")
+
 
 target_ton = C["target_ton"]
 q_terra, q_tetti, q_cap, q_wind = C["q_terra"], C["q_tetti"], C["q_cap"], C["q_wind"]
@@ -854,6 +979,7 @@ capex_ely, capex_batt = C["capex_ely"], C["capex_batt"]
 capex_pv_terra, capex_pv_tetti, capex_pv_cap = C["capex_pv_terra"], C["capex_pv_tetti"], C["capex_pv_cap"]
 capex_wind_kw, prezzo_h2, prezzo_h2_nc = C["capex_wind_kw"], C["prezzo_h2"], C["prezzo_h2_nc"]
 
+
 # Il profilo dell'impianto esistente si ricostruisce dai byte conservati.
 ext_norm = None
 if ext_mw > 0 and st.session_state.get("ext_raw") is not None:
@@ -861,10 +987,12 @@ if ext_mw > 0 and st.session_state.get("ext_raw") is not None:
     _b.name = st.session_state.get("ext_nome", "profilo.xlsx")
     ext_norm, ext_mw, _ = core.leggi_profilo_esterno(_b, ext_mw)
 
+
 target_kg = float(target_ton) * 1000.0
 inc_comp, cons_comp = (0.24, 2.23) if comp_tipo == "standard" else (0.42, 4.11)
 eff_sistema = core.KWH_KG_ELY + cons_comp
 somma_ext = float(ext_norm.sum()) if ext_norm is not None else 0.0
+
 
 if usa_superfici:
     mw_terra = terra_ha * (terra_use / 100.0) * terra_dens
@@ -891,6 +1019,7 @@ else:
                  "capannoni": q_cap / somma_q, "eolico": q_wind / somma_q}
     taglia_fissa = None
 
+
 P = {
     "eff_sistema": eff_sistema, "inc_comp": inc_comp,
     "resa_tetti": tetti_resa / 100.0, "resa_cap": cap_resa / 100.0,
@@ -911,6 +1040,7 @@ P = {
     "esterno_addizionale": bool(ext_add),
 }
 
+
 S = {
     "terra": {"km": terra_km, "diretta": terra_dir, "n": 1, "taglia_media": None, "c_punto": 0, "c_km": 0},
     "tetti": {"km": tetti_km, "diretta": tetti_dir, "n": tetti_n, "taglia_media": tetti_taglia,
@@ -921,9 +1051,11 @@ S = {
     "esterno": {"km": ext_km, "diretta": ext_dir, "n": 1, "taglia_media": None, "c_punto": 0, "c_km": 155000},
 }
 
+
 RATIOS = np.round(np.arange(0.10, 1.21, 0.05), 2)
 batt_fn = lambda q: (bess_ratio * (q["terra"] + q["tetti"] + q["capannoni"])) if bess_on else 0.0
 n_iter = 1
+
 
 with st.spinner(""):
     if modalita == "domanda" and ext_mw > 0:
@@ -947,13 +1079,16 @@ with st.spinner(""):
             else (lambda r: core.scala_per_domanda(r, target_kg, eff_sistema))
         esiti = core.ottimizza(df_tec, taglia_fn, quote, P, S)
 
+
 if not esiti:
     st.warning(t["warn_nosurf"])
     st.stop()
 
+
 P["somma_pv"], P["somma_wind"] = float(prof_pv.sum()), float(prof_wind.sum())
 batt_per_mw = batt_fn(quote)
 df_tec = core.scan_tecnico(gen_norm, batt_per_mw, grid_max_pct, RATIOS)
+
 
 ratio_scelto = min(esiti, key=lambda v: v["lcoh"])["ratio"] if ely_auto else ely_pct / 100.0
 riga, fer_h_u, grid_h_u, soc_h_u, curt_h_u = core.aggregati_e_dettaglio(
@@ -961,14 +1096,17 @@ riga, fer_h_u, grid_h_u, soc_h_u, curt_h_u = core.aggregati_e_dettaglio(
 taglia_fer = taglia_fn(riga)
 R = core.valuta(riga, taglia_fer, quote, P, S)
 
+
 gen_h = gen_norm * taglia_fer
 fer_h, grid_h, soc_h, curt_h = (a * taglia_fer for a in (fer_h_u, grid_h_u, soc_h_u, curt_h_u))
 h2_h = (fer_h + grid_h) * 1000.0 / eff_sistema
 ext_h = ext_norm * R["mw"]["esterno"] if ext_norm is not None else None
 
+
 df_sens = pd.DataFrame({"pct": [v["ratio"] * 100 for v in esiti],
                         "lcoh": [v["lcoh"] for v in esiti],
                         "h2": [v["prod_h2"] / 1000 for v in esiti]})
+
 
 # ==================================================================
 # AVVISI DI CONTESTO
@@ -982,11 +1120,13 @@ if ext_mw > 0:
     if n_iter > 1:
         st.caption(tx["iter"].format(k=n_iter))
 
+
 if _cap_rete > 0 and R["ely_mw"] > _cap_rete:
     st.warning(f"L'elettrolizzatore dimensionato ({R['ely_mw']:,.1f} MW) supera la capacità "
                f"residua di rete dichiarata nel questionario 2.5 ({_cap_rete:,.1f} MW). "
                "La connessione va verificata con il distributore prima di procedere: è "
                "spesso il vincolo che determina i tempi dell'intero progetto.")
+
 
 # ==================================================================
 # KPI PRINCIPALI
@@ -997,6 +1137,7 @@ k1.metric(t["prod_h2"], f"{R['prod_h2']/1000:,.1f} ton/y")
 k2.metric(t["lcoh"], f"€ {R['lcoh']:.2f} /kg")
 k3.metric(t["capex"], f"€ {R['capex_tot']/1e6:.2f} MLN")
 k4.metric(t["red_share"], f"{R['quota_rfnbo']:.0f}%")
+
 
 # ------------------------------------------------------------------
 # BENCHMARK: a che cosa corrisponde questa quantita' di idrogeno
@@ -1010,12 +1151,14 @@ if usa_domanda:
     for c, (v, lbl) in zip(cols, voci):
         c.metric(lbl, f"{v:.2f}%" if v < 10 else f"{v:.1f}%")
 
+
     st.markdown(f"**{tx['bm_eq']}**")
     e1, e2, e3 = st.columns(3)
     e1.metric(tx["bm_bus"], f"{ton/EQ_BUS_TON:,.0f}")
     e2.metric(tx["bm_truck"], f"{ton/EQ_CAMION_TON:,.0f}")
     e3.metric(tx["bm_forno"], f"{ton/EQ_FORNO_TON:,.2f}")
     st.caption(tx["bm_note"])
+
 
 if modalita == "copertura":
     copertura = R["prod_h2"] / target_kg * 100 if target_kg > 0 else 0.0
@@ -1041,7 +1184,9 @@ if modalita == "copertura":
         if extra:
             st.caption(f"{t['cop_extra']} — " + " · ".join(extra))
 
+
 tab_tec, tab_eco, tab_red, tab_dati = st.tabs([t["tab_tec"], t["tab_eco"], t["tab_red"], t["tab_dati"]])
+
 
 # ==================================================================
 # TAB TECNICA
@@ -1059,6 +1204,7 @@ with tab_tec:
                 f"({R['e_cat']['esterno']/R['e_prodotta']*100:.0f}% "
                 f"{'della generazione' if lang == 'it' else 'of generation'})")
 
+
     if not usa_superfici:
         st.markdown("---")
         st.subheader(t["sec_superfici_req"])
@@ -1068,6 +1214,7 @@ with tab_tec:
         b2.metric(t["cat_tetti"], f"{req['m2_tetti']:,.0f} m²")
         b3.metric(t["cat_capannoni"], f"{req['m2_capannoni']:,.0f} m²")
 
+
     st.markdown("---")
     st.subheader(t["sec_h2"])
     c1, c2, c3, c4 = st.columns(4)
@@ -1075,6 +1222,7 @@ with tab_tec:
     c2.metric(t["ore_anno"], f"{R['ore_eq']:,.0f} h/y", f"CF {R['ore_eq']/8760*100:.1f}%")
     c3.metric(t["prod_h2"], f"{R['prod_h2']/1000:,.1f} ton/y", f"{R['prod_h2']/365:,.0f} kg/g")
     c4.metric(t["stocc_massa"], f"{(R['prod_h2']*stocc_perc/100)/1000:,.2f} ton")
+
 
     st.markdown("---")
     st.subheader(t["sec_energia"])
@@ -1086,12 +1234,14 @@ with tab_tec:
     d4.metric(t["e_grid"], f"{R['e_grid']/1000:,.2f} GWh/y",
               f"{R['e_grid']/R['e_tot']*100:.1f}%" if R["e_tot"] > 0 else "0%")
 
+
     st.markdown("<br>", unsafe_allow_html=True)
     f1, f2, f3, f4 = st.columns(4)
     f1.metric(t["bess_cap"], f"{R['batt_mwh']:,.1f} MWh")
     f2.metric(t["curt"], f"{R['e_curt']/1000:,.2f} GWh/y", f"-{R['perc_curt']:.1f}%", delta_color="inverse")
     f3.metric(t["comp_cons"], f"{cons_comp:,.2f} kWh/kg")
     f4.metric(t["eff_sistema"], f"{eff_sistema:,.2f} kWh/kg")
+
 
     st.markdown("---")
     st.subheader(t["sec_rese"])
@@ -1103,6 +1253,7 @@ with tab_tec:
     g2.metric(t["y_m2_tetti"], f"{R['e_cat']['tetti']*q_h2/sup['m2_tetti']:,.2f} kg/m²/y" if sup["m2_tetti"] > 0 else "-")
     g3.metric(t["y_m2_cap"], f"{R['e_cat']['capannoni']*q_h2/sup['m2_capannoni']:,.2f} kg/m²/y" if sup["m2_capannoni"] > 0 else "-")
     g4.metric(t["y_mw"], f"{R['prod_h2']/taglia_fer:,.0f} kg/MW/y")
+
 
     st.markdown("---")
     st.markdown(t["chart_8760"])
@@ -1118,6 +1269,7 @@ with tab_tec:
         fig.add_trace(go.Scattergl(y=soc_h, name="BESS SOC (MWh)", line=dict(color='#4CAF50', dash='dash')), secondary_y=True)
     fig.update_layout(height=420, margin=dict(t=20, b=20), legend=dict(orientation="h", y=1.12))
     st.plotly_chart(fig, width="stretch")
+
 
     h1, h2 = st.columns(2)
     with h1:
@@ -1139,6 +1291,7 @@ with tab_tec:
         fig_s.update_layout(height=330, margin=dict(t=20, b=20), legend=dict(orientation="h", y=1.15))
         st.plotly_chart(fig_s, width="stretch")
 
+
 # ==================================================================
 # TAB ECONOMIA
 # ==================================================================
@@ -1149,6 +1302,7 @@ with tab_eco:
     m2.metric(t["capex"], f"€ {R['capex_tot']/1e6:.2f} MLN")
     m3.metric(t["payback"], f"{R['payback']:.1f} y" if R["payback"] < 50 else t["loss"])
     m4.metric(t["ricavi"], f"€ {R['ricavi']/1e6:.2f} MLN/y")
+
 
     valori = [R["c_ely"], R["c_batt"], R["c_stocc"], R["c_comp"], R["c_conn"], R["c_fer"]]
     p1, p2 = st.columns(2)
@@ -1171,6 +1325,7 @@ with tab_eco:
             righe.append({t["col_voce"]: lab, t["col_costo"]: f"{val:,.0f}", t["col_quota"]: "-"})
         st.table(pd.DataFrame(righe))
 
+
     st.markdown(t["tab_conn"])
     rows = []
     for d in R["dettaglio_conn"]:
@@ -1185,7 +1340,9 @@ with tab_eco:
     if rows:
         st.table(pd.DataFrame(rows))
 
+
     st.error(t["disclaimer"])
+
 
 # ==================================================================
 # TAB RED III
@@ -1199,10 +1356,12 @@ with tab_red:
     else:
         st.warning(t["red_partial"])
 
+
     r1, r2, r3 = st.columns(3)
     r1.metric(t["red_share"], f"{R['quota_rfnbo']:.1f}%", f"{R['h2_rfnbo']/1000:,.1f} ton/y")
     r2.metric(t["red_nc"], f"{R['h2_nc']/1000:,.1f} ton/y")
     r3.metric(t["co2"], f"{R['co2']:,.0f} ton CO₂/y")
+
 
     if grid_cert:
         stato = t["red_t_cert"]
@@ -1212,6 +1371,7 @@ with tab_red:
         stato = t["red_t_month"]
     else:
         stato = t["red_t_part"]
+
 
     check = [(t["red_c_add"], red_add), (t["red_c_aid"], red_noaid),
              (t["red_c_zone"], red_zone), (t["red_c_bess"], R["ok_bess"])]
@@ -1224,6 +1384,7 @@ with tab_red:
     if not R["ok_esterno"] and R["e_esterno_ko"] > 0:
         st.caption(f"⚠️ {R['e_esterno_ko']/1000:,.2f} GWh/y "
                    f"{'esclusi dalla certificazione perché provenienti dall’impianto esistente' if lang == 'it' else 'excluded from certification: from the existing plant'}.")
+
 
 # ==================================================================
 # TAB DATI ED EXPORT
@@ -1245,6 +1406,7 @@ with tab_dati:
     }
     st.table(pd.DataFrame(riepilogo.items(), columns=[t["col_voce"], "—"]))
 
+
     buf = io.StringIO()
     colonne = {"ora": np.arange(core.ORE), "FER_MW": gen_h, "Ely_FER_MW": fer_h,
                "Ely_Rete_MW": grid_h, "Curtailment_MW": curt_h, "BESS_SOC_MWh": soc_h, "H2_kg": h2_h}
@@ -1254,6 +1416,7 @@ with tab_dati:
     st.download_button(t["dl_hourly"], buf.getvalue(),
                        file_name="H2READY_profilo_orario.csv", mime="text/csv")
 
+
 # ==================================================================
 # ESPORTAZIONE NEL DATABASE CENTRALE
 # Fuori dalle schede: resta visibile anche se una chiave di traduzione
@@ -1262,8 +1425,10 @@ with tab_dati:
 st.markdown("---")
 st.header("💾 Esportazione")
 
+
 codice = H.testo(comune, H.COL_ID)
 st.caption(f"I dati verranno associati a {H.testo(comune, H.COL_NOME)} (ID {codice}).")
+
 
 if st.button("💾 Esporta nel database centrale", type="primary"):
     if True:
@@ -1302,6 +1467,7 @@ if st.button("💾 Esporta nel database centrale", type="primary"):
         if modalita == "copertura" and target_kg > 0:
             payload["T26_COPERTURA_PERC"] = float(round(R["prod_h2"] / target_kg * 100, 1))
 
+
         salvato = False
         try:
             resp = requests.post(WEBHOOK_URL, data=json.dumps(payload),
@@ -1319,6 +1485,7 @@ if st.button("💾 Esporta nel database centrale", type="primary"):
             salvato = True
         except Exception as e:
             st.error(f"Errore di connessione al database: {e}")
+
 
         if salvato:
             H.dopo_salvataggio(comune, lingua=lang)
