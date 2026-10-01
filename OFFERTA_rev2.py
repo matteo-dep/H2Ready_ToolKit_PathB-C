@@ -107,10 +107,6 @@ TX = {
     "it": {
         "back": "← Modifica parametri",
         "recap": "**{m}** · zona {z}{e}",
-        "back": "← Edit parameters",
-        "recap": "**{m}** · zone {z}{e}",
-        "back": "← Modifica parametri",
-        "recap": "**{m}** · cona {z}{e}",
         "tpl_head": "Il file deve avere esattamente questa struttura",
         "tpl_xlsx": "⬇️ Template Excel",
         "tpl_csv": "⬇️ Template CSV",
@@ -205,6 +201,8 @@ ciò che questa scheda permette di fare.
         "bm_note": "Riferimenti nazionali: PNIEC 2024, consumi di idrogeno rinnovabile al 2030 (0,115 Mton all'industria, 0,252 Mton complessive). Gli equivalenti fisici sono ordini di grandezza.",
     },
     "en": {
+        "back": "← Edit parameters",
+        "recap": "**{m}** · zone {z}{e}",
         "tpl_head": "The file must follow exactly this structure",
         "tpl_xlsx": "⬇️ Excel template", "tpl_csv": "⬇️ CSV template",
         "tpl_note": "Two columns: **ora** from 0 to 8759 and **potenza_kW**, the average power in that hour. All 8,760 rows are required, with no empty cells: write 0 where the plant is idle.",
@@ -291,6 +289,8 @@ be nearly free once depreciated. Comparing the two models is exactly what this t
         "bm_note": "National references: PNIEC 2024, renewable hydrogen consumption to 2030 (0.115 Mt industry, 0.252 Mt total). Physical equivalents are orders of magnitude.",
     },
     "sl": {
+        "back": "← Spremeni parametre",
+        "recap": "**{m}** · cona {z}{e}",
         "tpl_head": "Datoteka mora imeti natanko to strukturo",
         "tpl_xlsx": "⬇️ Predloga Excel", "tpl_csv": "⬇️ Predloga CSV",
         "tpl_note": "Dva stolpca: **ora** od 0 do 8759 in **potenza_kW**, povprečna moč v tisti uri. Potrebnih je vseh 8.760 vrstic, brez praznih celic: kjer naprava miruje, vpišite 0.",
@@ -374,7 +374,9 @@ skoraj brezplačna. Primerjava obeh modelov je prav namen tega zavihka.
         "bm_note": "Nacionalne reference: PNIEC 2024 (0,115 Mt industrija, 0,252 Mt skupaj). Fizični ekvivalenti so velikostni razredi.",
     },
 }
-tx = TX.get(lang, TX["it"])
+# L'italiano fa da base: una chiave non ancora tradotta esce in italiano
+# invece di far saltare la pagina con un KeyError.
+tx = {**TX["it"], **TX.get(lang, {})}
 
 
 # Riferimenti nazionali documentati (PNIEC 2024, consumi H2 rinnovabile al 2030)
