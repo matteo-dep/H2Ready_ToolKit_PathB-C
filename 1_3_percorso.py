@@ -80,6 +80,24 @@ P = {
         "en": "Tools to complete",
         "sl": "Orodja za izpolniti",
     },
+    "ap_sezione": {
+        "it": "Il passo finale",
+        "en": "The final step",
+        "sl": "Zadnji korak",
+    },
+    "ap_spiega": {
+        "it": "Quando gli strumenti sono compilati, il generatore mette insieme tutto "
+              "in un unico documento — PDF e Word — da usare come base per un atto di "
+              "indirizzo, come allegato a una candidatura o come documento di confronto "
+              "con gli stakeholder.",
+        "en": "Once the tools are filled in, the generator assembles everything into a "
+              "single document — PDF and Word — to use as the basis for a council "
+              "resolution, as an annex to a funding application, or as a document to "
+              "discuss with stakeholders.",
+        "sl": "Ko so orodja izpolnjena, generator vse združi v en dokument — PDF in Word "
+              "— ki ga lahko uporabite kot podlago za občinski sklep, kot prilogo k "
+              "vlogi za sredstva ali kot dokument za razpravo z deležniki.",
+    },
     "punteggio": {"it": "punteggio", "en": "score", "sl": "ocena"},
     "nessun_percorso": {
         "it": "Nessun percorso risulta attivo. Verifica di aver completato il "
@@ -173,3 +191,8 @@ if H.accesso_strumento(comune, "fast") == "richiesta":
 if note:
     st.caption(T("nota_richiesta", cosa=T("e_cong").join(note),
                  contatto=H.CONTATTO_PROGETTO))
+
+st.divider()
+st.subheader(T("ap_sezione"))
+st.caption(T("ap_spiega"))
+H.action_plan(comune, lingua=LANG, titolo=False)
