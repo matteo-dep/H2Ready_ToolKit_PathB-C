@@ -1489,3 +1489,9 @@ if st.button("💾 Esporta nel database centrale", type="primary"):
 
         if salvato:
             H.dopo_salvataggio(comune, lingua=lang)
+
+
+# Tendina "Prosegui cosi" + rientro al menu H2READY, in fondo alla pagina.
+# Dopo un salvataggio riuscito e' gia' stata mostrata da dopo_salvataggio()
+# e questa chiamata non fa nulla.
+H.prosegui(comune, lingua=lang)
