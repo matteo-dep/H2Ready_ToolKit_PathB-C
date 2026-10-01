@@ -29,61 +29,19 @@ LANG = LANG_OPTIONS[lang_choice]
 
 import h2ready as H
 
-comune = H.blocco_accesso("H2READY TOOLKIT - Tool 2.8: Dimensionamento HRS",
-                          percorso="C", avanzato=True, lingua=LANG)
+from testi_2_8 import T
+_t = T.get(LANG, T["it"])
+
+
+# Etichette tradotte delle chiavi dei dizionari di dati. Le chiavi restano in
+# italiano: le legge il motore di calcolo e finiscono nell'excelone.
+def vis(gruppo, chiave):
+    return _t.get(gruppo, {}).get(chiave, chiave)
+
+comune = H.blocco_accesso(_t["accesso"], percorso="C", avanzato=True, lingua=LANG)
 if comune is None:
     st.stop()
 
-T = {
-    "it": {
-        "title": "🚀 H2READY TOOLKIT - Tool 2.8: Dimensionamento e Design Tecno-Economico HRS",
-        "credits": "Sviluppato all'interno del progetto [INTERREG H2Ready](https://www.ita-slo.eu/en/h2ready) da **Matteo De Piccoli - [APE FVG](https://www.ape.fvg.it/)**",
-        "instr_title": "📖 GUIDA OPERATIVA (Leggi prima di iniziare)",
-        "logic_title": "🧠 Analisi Metodologica e Standard di Progettazione",
-        "instructions_md": """
-### 🎯 Qual è il tuo obiettivo?
-Dimensionare l'architettura tecnica e stimare l'impatto economico di una
-**Stazione di Rifornimento a Idrogeno (HRS)** per mezzi pesanti.
-
-**Istruzioni:**
-1. Scegli la **configurazione obiettivo**: determina quali pressioni la stazione deve
-   erogare e quanto margine di stoccaggio serve.
-2. Imposta la domanda. Puoi inserire i mezzi a mano, oppure derivarli da uno
-   **scenario di penetrazione** partendo dal traffico che transita sul nodo.
-3. Clicca su **Avvia Dimensionamento**: il report resta a schermo e in fondo puoi
-   esportarlo nel database centrale.
-        """,
-        "sb_scen": "🎯 Scenario di penetrazione",
-        "sb_config": "🏗️ Configurazione Strategica",
-        "sb_tech": "⚡ Parametri Tecnici HRS",
-        "sb_econ": "💸 Parametri Economici",
-        "lbl_conf_type": "Configurazione Impianto Obiettivo",
-        "scen_on": "Deriva i camion da uno scenario di penetrazione",
-        "scen_help": "Invece di indicare quanti camion servi, parti dal traffico che passa sul nodo e applica una quota di mezzi a idrogeno e una quota di cattura della stazione.",
-        "scen_year": "Orizzonte temporale",
-        "scen_tgm": "TGM camion a lungo raggio (mezzi/giorno)",
-        "scen_tgm_help": "Traffico giornaliero medio di mezzi pesanti sul nodo. È il dato raccolto dal tool 2.7.",
-        "scen_share": "Quota FCEV sul circolante pesante (%)",
-        "scen_capture": "Quota di cattura della stazione (%)",
-        "scen_capture_help": "Dei mezzi a idrogeno che transitano, quanti si riforniscono proprio qui. Dipende da quante altre stazioni ci sono sulla tratta.",
-        "scen_result": "**{tgm:,.0f}** camion/giorno × **{s:.1f}%** FCEV × **{c:.0f}%** cattura = **{n}** camion serviti al giorno",
-        "scen_zero": "⚠️ Con questi parametri la stazione non servirebbe nessun camion. Alza la quota di cattura o il traffico.",
-        "scen_traj": "📈 Traiettoria a parametri costanti",
-        "scen_traj_note": "Stessa quota di cattura, quota FCEV secondo lo scenario di riferimento di ciascun orizzonte. Serve al cronoprogramma dell'action plan: dice quando la stazione va ampliata.",
-        "scen_src": "**Riferimenti.** Reg. UE 2024/1610: −45% CO₂ sui veicoli pesanti nuovi entro il 2030, −65% entro il 2035, −90% entro il 2040 (base 2019); bus urbani nuovi a zero emissioni dal 2030. Roland Berger, *Camion a idrogeno* (2021): nel 2023 il parco pesante europeo è diesel al 99,5%, FCEV allo 0,4%; ricambio di flotta 10-15 anni. Strategia Nazionale Idrogeno (2024), orizzonte 2040-2050: l'idrogeno può coprire il 30% dei consumi finali nei trasporti. Le quote predefinite sono scenari, non obiettivi vincolanti: vanno discusse, non prese per buone.",
-        "lbl_cars": "Auto private / flotta leggera (4,5 kg/pieno)",
-        "lbl_buses": "Autobus TPL / Mezzi Speciali (30 kg/pieno)",
-        "lbl_trucks": "Camion Pesanti a lungo raggio (50 kg/pieno)",
-        "lbl_window": "Finestra di Rifornimento (ore/giorno)",
-        "lbl_cf": "Fattore di Carico Stazione (Capacity Factor %)",
-        "lbl_source": "Sorgente e Pressione di Ingresso H2",
-        "lbl_routing": "Architettura di Compressione/Storage",
-        "lbl_dispenser": "Pressione di Erogazione Finale",
-        "btn_calc": "🚀 Avvia Dimensionamento Impiantistico HRS",
-        "input_id": "Codice Identificativo per esportazione (es. 030043):",
-    }
-}
-_t = T.get(LANG, T["it"])
 
 # ==========================================
 # 2. SCENARI E CONFIGURAZIONI
@@ -100,20 +58,14 @@ CONFIGURAZIONI = {
     "HRS di Transito Puro (Flussi autostradali)": {
         "chiave": "transito", "pressioni": [700], "overcap": 1.9,
         "fonte_suggerita": "Carro Bombolaio (200 bar)",
-        "nota": "Erogazione a 700 bar per il solo trasporto pesante a lungo raggio. "
-                "Autobus e mezzi di piazzale non sono serviti da questa configurazione.",
     },
     "HRS Hub Intermodale Multi-Mezzo": {
         "chiave": "hub", "pressioni": [350, 700], "overcap": 2.1,
         "fonte_suggerita": "Pipeline Snam (30 bar)",
-        "nota": "Due linee di erogazione: 350 bar per autobus e mezzi di piazzale, "
-                "700 bar per camion e auto. Raddoppia dispenser e chiller.",
     },
     "HRS Valley Strategica Integrata": {
         "chiave": "valley", "pressioni": [350, 700], "overcap": 2.5,
         "fonte_suggerita": "Elettrolizzatore (20 bar)",
-        "nota": "Stazione integrata con produzione locale. Lo stoccaggio assorbe la "
-                "variabilità della fonte rinnovabile: margine più ampio.",
     },
 }
 
@@ -130,54 +82,54 @@ KG_AUTO, KG_BUS, KG_CAMION = 4.5, 30.0, 50.0
 # ==========================================
 st.title(_t["title"])
 st.markdown(_t["credits"])
-st.markdown("""
-    <p style='font-size: 0.8rem; color: gray;'>
-        🌐 Progetto: <a href='https://www.ita-slo.eu/en/h2ready' target='_blank'>Interreg H2Ready</a> |
-        🏠 Sito Ente: <a href='https://www.ape.fvg.it/' target='_blank'>APE FVG</a> |
-        📧 Contatto: <a href='mailto:matteo.depiccoli@ape.fvg.it'>matteo.depiccoli@ape.fvg.it</a>
-    </p>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<p style='font-size: 0.8rem; color: gray;'>"
+    f"🌐 {_t['c_progetto']}: <a href='https://www.ita-slo.eu/en/h2ready' "
+    "target='_blank'>Interreg H2Ready</a> | "
+    f"🏠 {_t['c_ente']}: <a href='https://www.ape.fvg.it/' "
+    "target='_blank'>APE FVG</a> | "
+    f"📧 {_t['c_contatto']}: "
+    "<a href='mailto:matteo.depiccoli@ape.fvg.it'>matteo.depiccoli@ape.fvg.it</a>"
+    "</p>", unsafe_allow_html=True)
 st.divider()
 
 # --- Comune e dati ereditati dal questionario 2.7 -------------------------
-H.intestazione_comune(comune, "Tool 2.8 · Dimensionamento della stazione di rifornimento")
+H.intestazione_comune(comune, _t["sottotitolo"])
 
 _tgm = H.valore(comune, "T27_TGM_CAMION", 0) or 0
 _snam = H.valore(comune, "T27_DISTANZA_SNAM_KM", None)
 _voci, _avvisi = [], []
 
 if _tgm > 0:
-    _voci.append(("Traffico pesante", f"{_tgm:,.0f} mezzi/giorno", "questionario 2.7"))
+    _voci.append((_t["d_traffico"], f"{_tgm:,.0f} " + _t["d_mezzi_g"], _t["d_da27"]))
 else:
-    _avvisi.append(("warning", "Il questionario 2.7 non riporta un traffico pesante: "
-                               "il valore va inserito a mano nella barra laterale."))
+    _avvisi.append(("warning", _t["d_no_tgm"]))
 if _snam is not None:
-    _voci.append(("Distanza dalla dorsale H2", f"{_snam:,.1f} km", "questionario 2.7"))
+    _voci.append((_t["d_snam"], f"{_snam:,.1f} km", _t["d_da27"]))
 
-for _col, _et in (("T27_FLAG_AFIR_GAP", "Colma un vuoto della rete AFIR"),
-                  ("T27_FLAG_HUB_MERCI", "Hub merci o interporti entro 5 km"),
-                  ("T27_FLAG_SINERGIA_HTA", "Distretto Hard-to-Abate confinante"),
-                  ("T27_FLAG_ACCORDI_FILIERA", "Accordi di filiera già attivi"),
-                  ("T27_FLAG_PUMS", "Idrogeno già nel PUMS")):
+for _col, _k in (("T27_FLAG_AFIR_GAP", "d_afir"),
+                 ("T27_FLAG_HUB_MERCI", "d_hub"),
+                 ("T27_FLAG_SINERGIA_HTA", "d_hta"),
+                 ("T27_FLAG_ACCORDI_FILIERA", "d_filiera"),
+                 ("T27_FLAG_PUMS", "d_pums")):
     if not H.vuoto(comune.get(_col)):
-        _voci.append((_et, "Sì" if H.vero(comune[_col]) else "No", "questionario 2.7"))
+        _voci.append((_t[_k], _t["d_si"] if H.vero(comune[_col]) else _t["d_no"],
+                      _t["d_da27"]))
 
 _prod_b = H.valore(comune, "T26_PRODUZIONE_H2_TON_ANNO", 0) or 0
 if _prod_b > 0:
-    _voci.append(("Produzione locale prevista", f"{_prod_b:,.1f} t/anno", "tool 2.6"))
+    _voci.append((_t["d_prod"], f"{_prod_b:,.1f} t/a", _t["d_da26"]))
 
 if not H.vero(comune.get("T27_FLAG_AREE_700BAR")) and not H.vuoto(comune.get("T27_FLAG_AREE_700BAR")):
-    _avvisi.append(("warning", "Dal 2.7 non risultano aree a piano regolatore compatibili "
-                               "con lo stoccaggio a 700 bar: verificare con l'ufficio "
-                               "urbanistica prima di dimensionare la stazione."))
+    _avvisi.append(("warning", _t["d_no_700"]))
 
-H.scheda_dati("📥 Dati ereditati dai questionari precedenti", _voci, _avvisi)
+H.scheda_dati(_t["dati_title"], _voci, _avvisi)
 
 # --- Configurazione suggerita dai dati -----------------------------------
 _modo_sugg, _perche = H.modalita_2_8(comune)
 _CHIAVI = {c["chiave"]: nome for nome, c in CONFIGURAZIONI.items()}
 _config_default = _CHIAVI.get(_modo_sugg, list(CONFIGURAZIONI.keys())[0])
-st.info(f"**Configurazione suggerita: {_config_default}**\n\n{_perche}")
+st.info(_t["sugg"].format(c=vis("config", _config_default), p=_perche))
 
 with st.expander(_t["instr_title"], expanded=True):
     st.markdown(_t["instructions_md"])
@@ -188,7 +140,7 @@ with st.expander(_t["logic_title"], expanded=False):
         with open(nome_file_logica, "r", encoding="utf-8") as f:
             st.markdown(f.read())
     else:
-        st.caption("ℹ️ File di analisi metodologica estesa caricato esternamente.")
+        st.caption(_t["logic_ko"])
 
 st.markdown("---")
 
@@ -203,9 +155,10 @@ with st.sidebar:
     with st.expander(_t["sb_config"], expanded=True):
         _opz = list(CONFIGURAZIONI.keys())
         config_scelta = st.selectbox(_t["lbl_conf_type"], _opz,
-                                     index=_opz.index(_config_default))
+                                     index=_opz.index(_config_default),
+                                     format_func=lambda k: vis("config", k))
         CFG = CONFIGURAZIONI[config_scelta]
-        st.caption(CFG["nota"])
+        st.caption(vis("config_nota", config_scelta))
 
     with st.expander(_t["sb_scen"], expanded=True):
         scen_on = st.checkbox(_t["scen_on"], value=_tgm > 0, help=_t["scen_help"])
@@ -236,14 +189,16 @@ with st.sidebar:
         if n_camion is None:
             n_camion = st.slider(_t["lbl_trucks"], 0, 150, 30, step=5)
         else:
-            st.caption(f"🎯 {_t['lbl_trucks']}: **{n_camion}** (dallo scenario {orizzonte})")
+            st.caption(_t["trucks_scen"].format(l=_t["lbl_trucks"], n=n_camion,
+                                                o=orizzonte))
         finestra_ore = st.slider(_t["lbl_window"], 1, 24, 8)
         capacity_factor = st.slider(_t["lbl_cf"], 10, 100, 75) / 100.0
 
         fonte_h2 = st.selectbox(
             _t["lbl_source"], list(PRESSIONI_INGRESSO.keys()),
             index=list(PRESSIONI_INGRESSO.keys()).index(CFG["fonte_suggerita"]),
-            help=f"Suggerita per questa configurazione: {CFG['fonte_suggerita']}")
+            format_func=lambda k: vis("fonti", k),
+            help=_t["help_source"].format(f=vis("fonti", CFG["fonte_suggerita"])))
 
         if st.session_state.prev_fonte != fonte_h2:
             if "Pipeline" in fonte_h2:
@@ -255,17 +210,18 @@ with st.sidebar:
             st.session_state.prev_fonte = fonte_h2
 
         routing_logic = st.selectbox(
-            _t["lbl_routing"], ["Magazzino a Cascata (3 banchi)", "Booster Compressor (Diretta)"])
+            _t["lbl_routing"], ["Magazzino a Cascata (3 banchi)", "Booster Compressor (Diretta)"],
+            format_func=lambda k: vis("routing", k))
 
         etichette = " + ".join(f"{p} bar" for p in CFG["pressioni"])
-        st.info(f"**{_t['lbl_dispenser']}:** {etichette}\n\nDeterminata dalla configurazione.")
+        st.info(_t["disp_info"].format(l=_t["lbl_dispenser"], p=etichette))
 
     with st.expander(_t["sb_econ"], expanded=True):
-        costo_energia = st.number_input("Costo Elettricità (€/kWh)", 0.05, 0.50, 0.15, step=0.01)
-        costo_molecola_in = st.number_input("Costo Acquisto/Produzione H2 (€/kg)",
+        costo_energia = st.number_input(_t["lbl_energia"], 0.05, 0.50, 0.15, step=0.01)
+        costo_molecola_in = st.number_input(_t["lbl_molecola"],
                                             1.0, 20.0, step=0.5, key="costo_molecola_in")
-        wacc = st.slider("Costo del Capitale (WACC %)", 1, 15, 6) / 100.0
-        anni_vita = st.slider("Vita Utile Impianto (Anni)", 5, 30, 15)
+        wacc = st.slider(_t["lbl_wacc"], 1, 15, 6) / 100.0
+        anni_vita = st.slider(_t["lbl_anni"], 5, 30, 15)
 
 
 # ==========================================
@@ -404,7 +360,7 @@ def calcola():
 if st.button(_t["btn_calc"], type="primary", use_container_width=True):
     R = calcola()
     if R is None:
-        st.error("Inserisci almeno un veicolo per effettuare il dimensionamento.")
+        st.error(_t["no_veicoli"])
         st.session_state.pop("hrs", None)
     else:
         st.session_state["hrs"] = R
@@ -415,91 +371,85 @@ if st.button(_t["btn_calc"], type="primary", use_container_width=True):
 if "hrs" in st.session_state:
     R = st.session_state["hrs"]
 
-    st.success(f"**Configurazione:** {R['config']}")
+    st.success(_t["r_config"].format(c=vis("config", R["config"])))
 
     if R.get("scen_on"):
-        st.header(f"🎯 Scenario {R['orizzonte']}")
+        st.header(_t["r_scen"].format(o=R["orizzonte"]))
         s1, s2, s3, s4 = st.columns(4)
-        s1.metric("TGM camion", f"{R['tgm']:,.0f} /giorno")
-        s2.metric("Quota FCEV", f"{R['quota_fcev']:.1f}%")
-        s3.metric("Quota di cattura", f"{R['quota_cattura']}%")
-        s4.metric("Camion serviti", f"{R['n_camion']} /giorno")
+        s1.metric(_t["r_tgm"], f"{R['tgm']:,.0f} " + _t["r_giorno"])
+        s2.metric(_t["r_fcev"], f"{R['quota_fcev']:.1f}%")
+        s3.metric(_t["r_cattura"], f"{R['quota_cattura']}%")
+        s4.metric(_t["r_serviti"], f"{R['n_camion']} " + _t["r_giorno"])
 
         if R.get("traiettoria"):
             st.subheader(_t["scen_traj"])
             st.caption(_t["scen_traj_note"])
             st.table(pd.DataFrame([{
-                "Orizzonte": r["anno"],
-                "Quota FCEV": f"{r['quota']:.0f}%",
-                "Camion/giorno": r["camion"],
-                "Domanda [kg/giorno]": f"{r['kg']:,.0f}",
-                "Taglia AFIR": r["taglia"],
-                "Colonnine": r["disp"],
-                "CAPEX [€]": f"{r['capex']:,.0f}",
-                "Prezzo minimo [€/kg]": f"{r['be']:.2f}",
+                _t["tr_orizzonte"]: r["anno"],
+                _t["tr_fcev"]: f"{r['quota']:.0f}%",
+                _t["tr_camion"]: r["camion"],
+                _t["tr_domanda"]: f"{r['kg']:,.0f}",
+                _t["tr_taglia"]: vis("taglie", r["taglia"]),
+                _t["tr_colonnine"]: r["disp"],
+                _t["tr_capex"]: f"{r['capex']:,.0f}",
+                _t["tr_prezzo"]: f"{r['be']:.2f}",
             } for r in R["traiettoria"]]))
         st.caption(_t["scen_src"])
         st.divider()
 
-    st.header("⚙️ Dimensionamento Impianto")
+    st.header(_t["i_title"])
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Domanda Nominale", f"{R['kg_totale']:,.1f} kg/giorno", R["taglia"])
-    c2.metric("Stoccaggio Fisico", f"{R['stoccaggio_tot']:,.0f} kg")
-    c3.metric("Potenza Compressore", f"{R['potenza_tot']:,.1f} kW")
-    c4.metric("Punti di erogazione", f"{R['n_disp_tot']}",
-              f"{R['consumo_medio']:,.2f} kWh/kg di compressione")
+    c1.metric(_t["i_domanda"], f"{R['kg_totale']:,.1f} kg" + _t["r_giorno"],
+              vis("taglie", R["taglia"]))
+    c2.metric(_t["i_stoccaggio"], f"{R['stoccaggio_tot']:,.0f} kg")
+    c3.metric(_t["i_potenza"], f"{R['potenza_tot']:,.1f} kW")
+    c4.metric(_t["i_punti"], f"{R['n_disp_tot']}",
+              _t["i_compressione"].format(v=f"{R['consumo_medio']:,.2f}"))
 
-    st.subheader("Linee di erogazione")
+    st.subheader(_t["i_linee"])
     for l in R["linee"]:
-        st.markdown(
-            f"- **{l['p_disp']} bar** — {l['kg_giorno']:,.1f} kg/giorno · "
-            f"**{l['n_disp']} punti di erogazione** · stoccaggio {l['stoccaggio_kg']:,.0f} kg · "
-            f"compressore {l['potenza_kW']:,.1f} kW · CAPEX {l['capex']:,.0f} €")
+        st.markdown(_t["i_linea"].format(
+            p=l["p_disp"], kg=f"{l['kg_giorno']:,.1f}", n=l["n_disp"],
+            s=f"{l['stoccaggio_kg']:,.0f}", kw=f"{l['potenza_kW']:,.1f}",
+            cx=f"{l['capex']:,.0f}"))
 
     for l in R["linee"]:
-        st.info(f"⏱️ **Standard SAE J2601 — linea {l['p_disp']} bar:** velocità limitata a "
-                f"**{l['velocita_g_s']} g/s**. Un pieno medio da {l['kg_medio']:,.1f} kg richiede "
-                f"**{l['minuti_pieno']:.1f} minuti** manovra compresa, quindi un dispenser serve "
-                f"al massimo **{l['per_dispenser']:.0f} mezzi** nella finestra di apertura. "
-                f"Per {l['n_erogazioni']:,.0f} rifornimenti al giorno servono "
-                f"**{l['n_disp']} colonnine**.")
+        st.info(_t["i_sae"].format(
+            p=l["p_disp"], v=l["velocita_g_s"], kg=f"{l['kg_medio']:,.1f}",
+            m=f"{l['minuti_pieno']:.1f}", d=f"{l['per_dispenser']:.0f}",
+            e=f"{l['n_erogazioni']:,.0f}", n=l["n_disp"]))
 
-    st.header("💶 Analisi Finanziaria")
+    st.header(_t["f_title"])
     co1, co2, co3 = st.columns(3)
-    co1.metric("CAPEX Totale (Chiavi in Mano)", f"€ {R['capex_tot']:,.0f}")
-    co2.metric("OPEX Fisso (O&M, 4% CAPEX)", f"€ {R['opex_fisso']:,.0f} / anno")
-    co3.metric("OPEX Elettrico", f"€ {R['opex_energia']:,.0f} / anno")
+    co1.metric(_t["f_capex"], f"€ {R['capex_tot']:,.0f}")
+    co2.metric(_t["f_opex_f"], f"€ {R['opex_fisso']:,.0f} " + _t["f_anno"])
+    co3.metric(_t["f_opex_e"], f"€ {R['opex_energia']:,.0f} " + _t["f_anno"])
 
-    st.header("🎯 Break-Even Point (Prezzo minimo alla pompa)")
-    st.success(f"Per coprire il rientro dell'investimento e i costi operativi, il prezzo "
-               f"minimo di vendita alla pompa deve essere di **{R['break_even']:.2f} €/kg**.")
+    st.header(_t["be_title"])
+    st.success(_t["be_txt"].format(v=f"{R['break_even']:.2f}"))
 
     b1, b2, b3 = st.columns(3)
-    b1.metric("Costo Molecola in Ingresso", f"€ {R['costo_molecola']:.2f} / kg")
-    b2.metric("Sovrapprezzo HRS", f"+ € {R['costo_specifico_hrs']:.2f} / kg")
-    b3.metric("Prezzo Minimo di Vendita", f"€ {R['break_even']:.2f} / kg")
+    b1.metric(_t["be_molecola"], f"€ {R['costo_molecola']:.2f} / kg")
+    b2.metric(_t["be_sovra"], f"+ € {R['costo_specifico_hrs']:.2f} / kg")
+    b3.metric(_t["be_minimo"], f"€ {R['break_even']:.2f} / kg")
 
-    st.caption("ℹ️ Il *sovrapprezzo HRS* è il margine necessario alla stazione per ripagare "
-               "compressori, manutenzione ed energia. Se la domanda è troppo bassa il "
-               "sovrapprezzo schizza, rendendo il carburante fuori mercato.")
+    st.caption(_t["be_nota"])
 
-    st.header("📐 Vincoli Spaziali")
-    st.warning(f"**Vincolo DM 23/10/2018:** per garantire le distanze di sicurezza, il lotto "
-               f"deve avere una superficie minima di **{R['area_minima']:,.0f} m²**.")
+    st.header(_t["sp_title"])
+    st.warning(_t["sp_txt"].format(a=f"{R['area_minima']:,.0f}"))
 
     # ==========================================
     # 7. ESPORTAZIONE
     # ==========================================
     st.divider()
-    st.subheader("💾 Esportazione")
+    st.subheader(_t["e_title"])
 
     GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwpP0x0hBnhOadXA43IieWg9EusAuhaafpyeXpyaStssDd7Qo-jwnuOttAllzz8r5JS/exec"
 
     id_comune = H.testo(comune, H.COL_ID)
-    st.caption(f"I dati verranno associati a {H.testo(comune, H.COL_NOME)} "
-               f"(ID {id_comune}).")
+    st.caption(_t["e_assoc"].format(c=H.testo(comune, H.COL_NOME), id=id_comune))
 
-    if st.button("💾 Esporta Report nel Database Centrale"):
+    if st.button(_t["e_btn"]):
         if True:
             payload = {
                 "ID_ISTAT": id_comune,
@@ -524,20 +474,17 @@ if "hrs" in st.session_state:
                                      headers={"Content-Type": "application/json"},
                                      allow_redirects=True, timeout=60)
                 if resp.status_code in (200, 201):
-                    st.success("✅ Dati del design impiantistico trasmessi con successo!")
-                    st.caption(f"Risposta del server: {resp.text}")
+                    st.success(_t["e_ok"])
+                    st.caption(_t["e_resp"].format(r=resp.text))
                     st.balloons()
                     salvato = True
                 else:
-                    st.error(f"Errore di sincronizzazione (codice {resp.status_code})")
+                    st.error(_t["e_err"].format(c=resp.status_code))
             except requests.exceptions.ReadTimeout:
-                st.warning("⏳ Il server non ha risposto entro il tempo massimo. Quasi sempre "
-                           "significa che i dati **sono stati scritti** e solo la conferma è "
-                           "andata persa: controlla la riga del Comune sul foglio prima di "
-                           "ripetere l'invio.")
+                st.warning(_t["e_timeout"])
                 salvato = True
             except Exception as e:
-                st.error(f"Errore di connessione: {e}")
+                st.error(_t["e_conn"].format(e=e))
 
             if salvato:
                 H.dopo_salvataggio(comune, lingua=LANG)
